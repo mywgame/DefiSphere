@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppRouteImport } from './routes/_app'
+import { Route as AdminRouteImport } from './routes/_admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppWithdrawRouteImport } from './routes/_app.withdraw'
 import { Route as AppWalletRouteImport } from './routes/_app.wallet'
@@ -23,6 +24,11 @@ import { Route as AppReferralsRouteImport } from './routes/_app.referrals'
 import { Route as AppProfileRouteImport } from './routes/_app.profile'
 import { Route as AppDepositRouteImport } from './routes/_app.deposit'
 import { Route as AppDashboardRouteImport } from './routes/_app.dashboard'
+import { Route as AdminAdminRouteImport } from './routes/_admin.admin'
+import { Route as AdminAdminUsersRouteImport } from './routes/_admin.admin.users'
+import { Route as AdminAdminTransactionsRouteImport } from './routes/_admin.admin.transactions'
+import { Route as AdminAdminStakingRouteImport } from './routes/_admin.admin.staking'
+import { Route as AdminAdminSettingsRouteImport } from './routes/_admin.admin.settings'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -31,6 +37,10 @@ const LoginRoute = LoginRouteImport.update({
 } as any)
 const AppRoute = AppRouteImport.update({
   id: '/_app',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/_admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -93,10 +103,36 @@ const AppDashboardRoute = AppDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AppRoute,
 } as any)
+const AdminAdminRoute = AdminAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminAdminUsersRoute = AdminAdminUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AdminAdminRoute,
+} as any)
+const AdminAdminTransactionsRoute = AdminAdminTransactionsRouteImport.update({
+  id: '/transactions',
+  path: '/transactions',
+  getParentRoute: () => AdminAdminRoute,
+} as any)
+const AdminAdminStakingRoute = AdminAdminStakingRouteImport.update({
+  id: '/staking',
+  path: '/staking',
+  getParentRoute: () => AdminAdminRoute,
+} as any)
+const AdminAdminSettingsRoute = AdminAdminSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AdminAdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/admin': typeof AdminAdminRouteWithChildren
   '/dashboard': typeof AppDashboardRoute
   '/deposit': typeof AppDepositRoute
   '/profile': typeof AppProfileRoute
@@ -108,10 +144,15 @@ export interface FileRoutesByFullPath {
   '/transactions': typeof AppTransactionsRoute
   '/wallet': typeof AppWalletRoute
   '/withdraw': typeof AppWithdrawRoute
+  '/admin/settings': typeof AdminAdminSettingsRoute
+  '/admin/staking': typeof AdminAdminStakingRoute
+  '/admin/transactions': typeof AdminAdminTransactionsRoute
+  '/admin/users': typeof AdminAdminUsersRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/admin': typeof AdminAdminRouteWithChildren
   '/dashboard': typeof AppDashboardRoute
   '/deposit': typeof AppDepositRoute
   '/profile': typeof AppProfileRoute
@@ -123,12 +164,18 @@ export interface FileRoutesByTo {
   '/transactions': typeof AppTransactionsRoute
   '/wallet': typeof AppWalletRoute
   '/withdraw': typeof AppWithdrawRoute
+  '/admin/settings': typeof AdminAdminSettingsRoute
+  '/admin/staking': typeof AdminAdminStakingRoute
+  '/admin/transactions': typeof AdminAdminTransactionsRoute
+  '/admin/users': typeof AdminAdminUsersRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_admin': typeof AdminRouteWithChildren
   '/_app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
+  '/_admin/admin': typeof AdminAdminRouteWithChildren
   '/_app/dashboard': typeof AppDashboardRoute
   '/_app/deposit': typeof AppDepositRoute
   '/_app/profile': typeof AppProfileRoute
@@ -140,12 +187,17 @@ export interface FileRoutesById {
   '/_app/transactions': typeof AppTransactionsRoute
   '/_app/wallet': typeof AppWalletRoute
   '/_app/withdraw': typeof AppWithdrawRoute
+  '/_admin/admin/settings': typeof AdminAdminSettingsRoute
+  '/_admin/admin/staking': typeof AdminAdminStakingRoute
+  '/_admin/admin/transactions': typeof AdminAdminTransactionsRoute
+  '/_admin/admin/users': typeof AdminAdminUsersRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/login'
+    | '/admin'
     | '/dashboard'
     | '/deposit'
     | '/profile'
@@ -157,10 +209,15 @@ export interface FileRouteTypes {
     | '/transactions'
     | '/wallet'
     | '/withdraw'
+    | '/admin/settings'
+    | '/admin/staking'
+    | '/admin/transactions'
+    | '/admin/users'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/login'
+    | '/admin'
     | '/dashboard'
     | '/deposit'
     | '/profile'
@@ -172,11 +229,17 @@ export interface FileRouteTypes {
     | '/transactions'
     | '/wallet'
     | '/withdraw'
+    | '/admin/settings'
+    | '/admin/staking'
+    | '/admin/transactions'
+    | '/admin/users'
   id:
     | '__root__'
     | '/'
+    | '/_admin'
     | '/_app'
     | '/login'
+    | '/_admin/admin'
     | '/_app/dashboard'
     | '/_app/deposit'
     | '/_app/profile'
@@ -188,10 +251,15 @@ export interface FileRouteTypes {
     | '/_app/transactions'
     | '/_app/wallet'
     | '/_app/withdraw'
+    | '/_admin/admin/settings'
+    | '/_admin/admin/staking'
+    | '/_admin/admin/transactions'
+    | '/_admin/admin/users'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRouteWithChildren
   AppRoute: typeof AppRouteWithChildren
   LoginRoute: typeof LoginRoute
 }
@@ -210,6 +278,13 @@ declare module '@tanstack/react-router' {
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof AppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_admin': {
+      id: '/_admin'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -296,8 +371,71 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppDashboardRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_admin/admin': {
+      id: '/_admin/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminAdminRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/_admin/admin/users': {
+      id: '/_admin/admin/users'
+      path: '/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AdminAdminUsersRouteImport
+      parentRoute: typeof AdminAdminRoute
+    }
+    '/_admin/admin/transactions': {
+      id: '/_admin/admin/transactions'
+      path: '/transactions'
+      fullPath: '/admin/transactions'
+      preLoaderRoute: typeof AdminAdminTransactionsRouteImport
+      parentRoute: typeof AdminAdminRoute
+    }
+    '/_admin/admin/staking': {
+      id: '/_admin/admin/staking'
+      path: '/staking'
+      fullPath: '/admin/staking'
+      preLoaderRoute: typeof AdminAdminStakingRouteImport
+      parentRoute: typeof AdminAdminRoute
+    }
+    '/_admin/admin/settings': {
+      id: '/_admin/admin/settings'
+      path: '/settings'
+      fullPath: '/admin/settings'
+      preLoaderRoute: typeof AdminAdminSettingsRouteImport
+      parentRoute: typeof AdminAdminRoute
+    }
   }
 }
+
+interface AdminAdminRouteChildren {
+  AdminAdminSettingsRoute: typeof AdminAdminSettingsRoute
+  AdminAdminStakingRoute: typeof AdminAdminStakingRoute
+  AdminAdminTransactionsRoute: typeof AdminAdminTransactionsRoute
+  AdminAdminUsersRoute: typeof AdminAdminUsersRoute
+}
+
+const AdminAdminRouteChildren: AdminAdminRouteChildren = {
+  AdminAdminSettingsRoute: AdminAdminSettingsRoute,
+  AdminAdminStakingRoute: AdminAdminStakingRoute,
+  AdminAdminTransactionsRoute: AdminAdminTransactionsRoute,
+  AdminAdminUsersRoute: AdminAdminUsersRoute,
+}
+
+const AdminAdminRouteWithChildren = AdminAdminRoute._addFileChildren(
+  AdminAdminRouteChildren,
+)
+
+interface AdminRouteChildren {
+  AdminAdminRoute: typeof AdminAdminRouteWithChildren
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminAdminRoute: AdminAdminRouteWithChildren,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
 interface AppRouteChildren {
   AppDashboardRoute: typeof AppDashboardRoute
@@ -331,6 +469,7 @@ const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRouteWithChildren,
   AppRoute: AppRouteWithChildren,
   LoginRoute: LoginRoute,
 }

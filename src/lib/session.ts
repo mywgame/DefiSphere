@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
 
+export type Role = "user" | "admin";
+
 export type Session = {
     email: string;
     token: string;
-    expiresAt: number; // ms epoch
+    expiresAt: number;
+    role: Role;
 };
 
 const KEY = "defisphere.session";
@@ -68,10 +71,13 @@ export async function mockSignIn(email: string, password: string): Promise<Sessi
     if (password.toLowerCase() === "wrongpass") {
         throw new Error("Invalid email or password.");
     }
+    const role: Role = /^admin/i.test(email.trim()) ? "admin" : "user";
+
     const session: Session = {
         email,
         token: crypto.randomUUID(),
-        expiresAt: Date.now() + 1000 * 60 * 60 * 24 * 7, // 7 days
+        expiresAt: Date.now() + 1000 * 60 * 60 * 24 * 7,
+        role,
     };
     sessionStore.set(session);
     return session;
