@@ -23,7 +23,7 @@ const items = [
     { to: "/deposit", label: "Deposit", icon: ArrowDownToLine },
     { to: "/withdraw", label: "Withdraw", icon: ArrowUpFromLine },
     { to: "/staking", label: "Staking", icon: Coins },
-    { to: "/rewards", label: "Rewards", icon: Sparkles },
+    { to: "/rewards", label: "Rewards", icon: Gift },
     { to: "/referrals", label: "Referrals", icon: Users },
     { to: "/transactions", label: "Transactions", icon: Receipt },
     { to: "/profile", label: "Profile", icon: User },

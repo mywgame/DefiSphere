@@ -31,9 +31,8 @@ function StakingPage() {
                         key={p.name}
                         whileHover={{ y: -3 }}
                         onClick={() => setPlan(p.name)}
-                        className={`relative overflow-hidden rounded-2xl glass-card p-4 text-left transition ${
-                            plan === p.name ? "ring-1 ring-[color:var(--neon-cyan)]/60" : ""
-                        }`}
+                        className={`relative overflow-hidden rounded-2xl glass-card p-4 text-left transition ${plan === p.name ? "ring-1 ring-[color:var(--neon-cyan)]/60" : ""
+                            }`}
                     >
                         <div className={`absolute -right-12 -top-12 h-32 w-32 rounded-full bg-[color:var(--neon-${p.tone})]/25 blur-2xl`} />
                         <div className="relative flex items-center justify-between sm:block">
@@ -122,11 +121,10 @@ function StakingPage() {
                         <div key={p.id} className="rounded-xl border border-white/5 bg-white/[0.03] p-3">
                             <div className="flex items-center justify-between">
                                 <p className="text-sm font-semibold">{p.name}</p>
-                                <span className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold ${
-                                    p.status === "Active"
+                                <span className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold ${p.status === "Active"
                                         ? "border-emerald-400/30 bg-emerald-400/10 text-emerald-300"
                                         : "border-[color:var(--neon-cyan)]/30 bg-[color:var(--neon-cyan)]/10 text-[color:var(--neon-cyan)]"
-                                }`}>{p.status}</span>
+                                    }`}>{p.status}</span>
                             </div>
                             <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
                                 <div className="text-muted-foreground">Staked</div>
@@ -162,11 +160,10 @@ function StakingPage() {
                                     <td className="px-3 py-3">{p.staked.toLocaleString()} USDT</td>
                                     <td className="px-3 py-3 text-[color:var(--neon-cyan)]">{p.dpy}%</td>
                                     <td className="px-3 py-3">
-                                        <span className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold ${
-                                            p.status === "Active"
+                                        <span className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold ${p.status === "Active"
                                                 ? "border-emerald-400/30 bg-emerald-400/10 text-emerald-300"
                                                 : "border-[color:var(--neon-cyan)]/30 bg-[color:var(--neon-cyan)]/10 text-[color:var(--neon-cyan)]"
-                                        }`}>{p.status}</span>
+                                            }`}>{p.status}</span>
                                     </td>
                                     <td className="px-3 py-3 text-muted-foreground">{p.start}</td>
                                     <td className="px-3 py-3 text-muted-foreground">{p.expiry}</td>

@@ -7,6 +7,7 @@ import {
     ArrowDownToLine,
     ArrowUpFromLine,
     Coins,
+    Gem,
     Gift,
     PiggyBank,
     Sparkles,
@@ -41,7 +42,7 @@ function DashboardPage() {
         { to: "/withdraw", label: "Withdraw", icon: ArrowUpFromLine, tone: "purple" },
         { to: "/staking", label: "Stake", icon: Coins, tone: "cyan" },
         { to: "/staking", label: "Unstake", icon: Unlock, tone: "purple" },
-        { to: "/rewards", label: "Claim", icon: Sparkles, tone: "pink" },
+        { to: "/rewards", label: "Claim", icon: Gem, tone: "pink" },
         { to: "/referrals", label: "Referral", icon: Users, tone: "emerald" },
     ] as const;
 

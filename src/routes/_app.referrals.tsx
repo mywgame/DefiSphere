@@ -1,7 +1,7 @@
 import { PageHeader } from "@/components/dashboard/PageHeader";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { createFileRoute } from "@tanstack/react-router";
-import { Copy, Gift, Users } from "lucide-react";
+import { Copy, DollarSign, Gift, Users } from "lucide-react";
 import { useState } from "react";
 
 export const Route = createFileRoute("/_app/referrals")({
@@ -28,17 +28,18 @@ function ReferralsPage() {
     };
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
             <PageHeader title="Referrals" subtitle="Invite friends and earn lifetime commissions." />
 
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                 <StatCard label="Total Referrals" value={24} unit="users" icon={Users} tone="cyan" />
-                <StatCard index={1} label="Referral Earnings" value={1284.5} icon={Gift} tone="purple" />
+                <StatCard index={1} label="Referral Earnings" value={1284.5} icon={DollarSign} tone="purple" />
                 <StatCard index={2} label="Tier" value="Gold" unit="" icon={Gift} tone="pink" />
             </div>
 
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                <div className="rounded-2xl glass-card p-6">
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                {/* Referral link + code */}
+                <div className="rounded-2xl glass-card p-4 sm:p-6">
                     <p className="text-xs uppercase tracking-wider text-muted-foreground">Referral Link</p>
                     <div className="mt-2 flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] p-2.5">
                         <span className="truncate text-sm font-mono">{link}</span>
@@ -50,7 +51,7 @@ function ReferralsPage() {
                         </button>
                     </div>
 
-                    <p className="mt-5 text-xs uppercase tracking-wider text-muted-foreground">Referral Code</p>
+                    <p className="mt-4 text-xs uppercase tracking-wider text-muted-foreground">Referral Code</p>
                     <div className="mt-2 flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] p-2.5">
                         <span className="text-base font-bold tracking-widest">{code}</span>
                         <button
@@ -62,7 +63,8 @@ function ReferralsPage() {
                     </div>
                 </div>
 
-                <div className="rounded-2xl glass-card p-6">
+                {/* Commission tiers */}
+                <div className="rounded-2xl glass-card p-4 sm:p-6">
                     <p className="text-sm font-semibold">Commission Tiers</p>
                     <ul className="mt-3 space-y-2">
                         {[
@@ -79,10 +81,31 @@ function ReferralsPage() {
                 </div>
             </div>
 
-            <div className="rounded-2xl glass-card p-6">
+            {/* Referral Rewards */}
+            <div className="rounded-2xl glass-card p-4 sm:p-6">
                 <h3 className="font-display text-lg font-semibold">Referral Rewards</h3>
-                <div className="mt-4 overflow-x-auto">
-                    <table className="w-full min-w-[560px] text-sm">
+
+                {/* Mobile cards */}
+                <div className="mt-4 space-y-3 sm:hidden">
+                    {refRows.map((r) => (
+                        <div key={r.user} className="rounded-xl border border-white/5 bg-white/[0.03] p-4">
+                            <div className="flex items-start justify-between gap-3">
+                                <div className="min-w-0">
+                                    <p className="truncate font-medium">{r.user}</p>
+                                    <p className="mt-0.5 text-xs text-muted-foreground">Joined {r.joined}</p>
+                                </div>
+                                <span className="shrink-0 text-sm font-semibold text-emerald-300">+{r.earned.toLocaleString()} USDT</span>
+                            </div>
+                            <div className="mt-2 text-xs text-muted-foreground">
+                                Staked <span className="text-foreground">{r.staked.toLocaleString()} USDT</span>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+
+                {/* Desktop table */}
+                <div className="mt-4 hidden sm:block overflow-x-auto">
+                    <table className="w-full text-sm">
                         <thead>
                             <tr className="text-left text-[11px] uppercase tracking-wider text-muted-foreground">
                                 <th className="px-3 py-2 font-medium">User</th>
