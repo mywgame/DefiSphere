@@ -1,6 +1,8 @@
-import { useEffect, useState } from "react";
+// src/lib/session.ts
+import { useEffect, useState } from 'react';
+import { supabase } from './supabaseClient';
 
-export type Role = "user" | "admin";
+export type Role = 'admin' | 'user';
 
 export type Session = {
     email: string;
@@ -9,76 +11,84 @@ export type Session = {
     role: Role;
 };
 
-const KEY = "defisphere.session";
-const listeners = new Set<() => void>();
+let currentSession: Session | null = null;
+const listeners = new Set<(session: Session | null) => void>();
 
-function read(): Session | null {
-    if (typeof window === "undefined") return null;
-    try {
-        const raw = localStorage.getItem(KEY);
-        if (!raw) return null;
-        const s = JSON.parse(raw) as Session;
-        if (!s?.expiresAt || s.expiresAt < Date.now()) {
-            localStorage.removeItem(KEY);
-            return null;
-        }
-        return s;
-    } catch {
-        return null;
-    }
-}
-
-function emit() {
-    for (const l of listeners) l();
-}
+const deriveRole = (email: string | undefined): Role => {
+    if (!email) return 'user';
+    return email.toLowerCase().startsWith('admin') ? 'admin' : 'user';
+};
 
 export const sessionStore = {
-    get: read,
-    set(session: Session) {
-        localStorage.setItem(KEY, JSON.stringify(session));
-        emit();
+    get: (): Session | null => {
+        return currentSession;
     },
-    clear() {
-        localStorage.removeItem(KEY);
-        emit();
+
+    // Clean Approach: Sirf storage clear aur listeners ko notify karega
+    clear: async (): Promise<void> => {
+        if (typeof window !== 'undefined') {
+            try {
+                await supabase.auth.signOut();
+                localStorage.removeItem('supabase.auth.token');
+            } catch (err) {
+                console.error("Supabase signOut error:", err);
+            }
+        }
+        currentSession = null;
+        listeners.forEach((listener) => listener(null));
     },
-    subscribe(listener: () => void) {
+
+    set: (session: Session | null): void => {
+        currentSession = session;
+        listeners.forEach((listener) => listener(currentSession));
+    },
+
+    subscribe: (listener: (session: Session | null) => void) => {
         listeners.add(listener);
-        return () => listeners.delete(listener);
-    },
+        listener(currentSession);
+        return () => {
+            listeners.delete(listener);
+        };
+    }
 };
 
 export function useSession() {
-    const [session, setSession] = useState<Session | null>(null);
+    const [session, setSession] = useState<Session | null>(currentSession);
+
     useEffect(() => {
-        setSession(read());
-        const unsub = sessionStore.subscribe(() => setSession(read()));
-        const onStorage = (e: StorageEvent) => {
-            if (e.key === KEY) setSession(read());
-        };
-        window.addEventListener("storage", onStorage);
-        return () => {
-            unsub();
-            window.removeEventListener("storage", onStorage);
-        };
+        return sessionStore.subscribe((s) => {
+            setSession(s);
+        });
     }, []);
+
     return session;
 }
 
-/** Mock sign-in used by the UI-only login page. Replace with real auth later. */
-export async function mockSignIn(email: string, password: string): Promise<Session> {
-    await new Promise((r) => setTimeout(r, 700));
-    if (password.toLowerCase() === "wrongpass") {
-        throw new Error("Invalid email or password.");
-    }
-    const role: Role = /^admin/i.test(email.trim()) ? "admin" : "user";
+if (typeof window !== 'undefined') {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session && session.user) {
+            currentSession = {
+                email: session.user.email || '',
+                token: session.access_token,
+                expiresAt: session.expires_at || 0,
+                role: deriveRole(session.user.email),
+            };
+            listeners.forEach((listener) => listener(currentSession));
+        }
+    });
 
-    const session: Session = {
-        email,
-        token: crypto.randomUUID(),
-        expiresAt: Date.now() + 1000 * 60 * 60 * 24 * 7,
-        role,
-    };
-    sessionStore.set(session);
-    return session;
+    supabase.auth.onAuthStateChange((_event, session) => {
+        if (session && session.user) {
+            currentSession = {
+                email: session.user.email || '',
+                token: session.access_token,
+                expiresAt: session.expires_at || 0,
+                role: deriveRole(session.user.email),
+            };
+            listeners.forEach((listener) => listener(currentSession));
+        } else {
+            currentSession = null;
+            listeners.forEach((listener) => listener(null));
+        }
+    });
 }

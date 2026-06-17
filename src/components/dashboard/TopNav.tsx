@@ -1,6 +1,6 @@
 import { sessionStore, useSession } from "@/lib/session";
 import { Link } from "@tanstack/react-router";
-import { Bell, ChevronDown, KeyRound, LogOut, Menu, Search, Shield, User, Wallet } from "lucide-react";
+import { Bell, ChevronDown, LogOut, Menu, Search, User, Wallet } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 export function TopNav({ onMenu }: { onMenu: () => void }) {
@@ -23,92 +23,94 @@ export function TopNav({ onMenu }: { onMenu: () => void }) {
     const email = session?.email ?? "user@defisphere.io";
     const initial = email.charAt(0).toUpperCase();
 
+    // Professional Clean Trigger
+    const handleLogout = async () => {
+        try {
+            setOpenMenu(false);
+            await sessionStore.clear();
+        } catch (error) {
+            console.error("TopNav logout failed:", error);
+        }
+    };
+
     return (
         <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-white/5 bg-[#050816]/80 px-4 backdrop-blur-xl md:px-6">
             <button
                 onClick={onMenu}
-                className="rounded-lg border border-white/10 bg-white/5 p-2 text-muted-foreground hover:text-foreground lg:hidden"
-                aria-label="Open menu"
+                className="rounded-lg p-1.5 text-muted-foreground hover:bg-white/5 hover:text-foreground lg:hidden"
             >
-                <Menu className="h-4 w-4" />
+                <Menu className="h-5 w-5" />
             </button>
 
-            <div className="relative hidden flex-1 max-w-md md:block">
-                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <div className="relative flex-1 max-w-md hidden md:block">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <input
-                    placeholder="Search transactions, packages…"
-                    className="h-10 w-full rounded-xl border border-white/10 bg-white/[0.04] pl-9 pr-3 text-sm text-foreground placeholder:text-muted-foreground focus:border-[color:var(--neon-cyan)]/40 focus:outline-none"
+                    placeholder="Search transactions, stakes..."
+                    className="h-9 w-full rounded-xl border border-white/5 bg-white/[0.03] pl-9 pr-4 text-xs focus:border-[color:var(--neon-cyan)]/30 focus:outline-none placeholder:text-muted-foreground/50"
                 />
             </div>
 
-            <div ref={wrapRef} className="ml-auto flex items-center gap-2 md:gap-3">
+            <div className="ml-auto flex items-center gap-4" ref={wrapRef}>
+                {/* Notifications */}
                 <div className="relative">
                     <button
                         onClick={() => {
-                            setOpenNotif((v) => !v);
+                            setOpenNotif(!openNotif);
                             setOpenMenu(false);
                         }}
-                        className="relative rounded-xl border border-white/10 bg-white/[0.04] p-2.5 text-muted-foreground hover:text-foreground"
-                        aria-label="Notifications"
+                        className="relative rounded-xl border border-white/5 bg-white/[0.03] p-2.5 text-muted-foreground hover:text-foreground"
                     >
                         <Bell className="h-4 w-4" />
-                        <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-[color:var(--neon-pink)] shadow-[0_0_8px_var(--neon-pink)]" />
+                        <span className="absolute right-2.5 top-2.5 h-1.5 w-1.5 rounded-full bg-[color:var(--neon-cyan)] shadow-[0_0_6px_var(--neon-cyan)]" />
                     </button>
+
                     {openNotif && (
-                        <div className="absolute right-0 mt-2 w-80 overflow-hidden rounded-2xl border border-white/10 bg-[#0a0d1e]/95 p-2 shadow-2xl backdrop-blur-xl">
-                            <p className="px-3 pb-2 pt-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                                Notifications
-                            </p>
-                            {[
-                                { t: "Reward credited", d: "+184.22 DFX claimed", time: "2m ago" },
-                                { t: "Deposit confirmed", d: "5,000 USDT received", time: "1h ago" },
-                                { t: "New referral", d: "alex.eth joined via your link", time: "3h ago" },
-                            ].map((n) => (
-                                <div key={n.t} className="rounded-lg p-3 hover:bg-white/5">
-                                    <div className="flex items-center justify-between">
-                                        <p className="text-sm font-medium">{n.t}</p>
-                                        <span className="text-[10px] text-muted-foreground">{n.time}</span>
-                                    </div>
-                                    <p className="text-xs text-muted-foreground">{n.d}</p>
+                        <div className="absolute right-0 mt-2 w-80 rounded-2xl border border-white/5 bg-[#0b0f24] p-4 shadow-xl backdrop-blur-xl">
+                            <div className="flex items-center justify-between border-b border-white/5 pb-2">
+                                <p className="text-xs font-semibold text-foreground">Notifications</p>
+                                <button className="text-[10px] text-[color:var(--neon-cyan)] hover:underline">
+                                    Mark all read
+                                </button>
+                            </div>
+                            <div className="mt-3 space-y-3">
+                                <div className="rounded-xl bg-white/[0.02] p-2.5 text-left transition hover:bg-white/[0.04]">
+                                    <p className="text-xs font-medium text-foreground">Staking Reward Received</p>
+                                    <p className="mt-0.5 text-[10px] text-muted-foreground leading-normal">
+                                        You earned +14.22 DFX from Quantum Yield Pro package.
+                                    </p>
+                                    <p className="mt-1 text-[9px] text-muted-foreground/60">2 hours ago</p>
                                 </div>
-                            ))}
+                            </div>
                         </div>
                     )}
                 </div>
 
+                {/* User Dropdown Profile Menu */}
                 <div className="relative">
                     <button
                         onClick={() => {
-                            setOpenMenu((v) => !v);
+                            setOpenMenu(!openMenu);
                             setOpenNotif(false);
                         }}
-                        className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] p-1 pr-2 hover:bg-white/[0.07]"
+                        className="flex items-center gap-2 rounded-xl border border-white/5 bg-white/[0.03] p-1.5 pr-2.5 transition hover:bg-white/[0.06]"
                     >
-                        <span
-                            className="flex h-8 w-8 items-center justify-center rounded-lg text-xs font-bold text-primary-foreground"
+                        <div
+                            className="flex h-7 w-7 items-center justify-center rounded-lg text-xs font-bold text-primary-foreground"
                             style={{ background: "var(--gradient-primary)" }}
                         >
                             {initial}
+                        </div>
+                        <span className="hidden text-xs font-medium text-foreground/90 sm:block max-w-[100px] truncate">
+                            {email}
                         </span>
-                        <span className="hidden text-left sm:block">
-                            <span className="block text-xs font-semibold leading-tight">My account</span>
-                            <span className="block max-w-[140px] truncate text-[10px] text-muted-foreground">
-                                {email}
-                            </span>
-                        </span>
-                        <ChevronDown className="hidden h-3.5 w-3.5 text-muted-foreground sm:block" />
+                        <ChevronDown className="h-3 w-3 text-muted-foreground" />
                     </button>
+
                     {openMenu && (
-                        <div className="absolute right-0 mt-2 w-64 overflow-hidden rounded-2xl border border-white/10 bg-[#0a0d1e]/95 p-2 shadow-2xl backdrop-blur-xl">
-                            <div className="border-b border-white/5 px-3 py-3">
-                                <p className="truncate text-sm font-semibold">{email}</p>
-                                <p className="text-[11px] text-muted-foreground">Verified · Tier 2</p>
-                            </div>
+                        <div className="absolute right-0 mt-2 w-48 rounded-2xl border border-white/5 bg-[#0b0f24] p-1.5 shadow-xl backdrop-blur-xl animate-in fade-in slide-in-from-top-1">
                             {[
                                 { to: "/profile", label: "My Profile", icon: User },
-                                { to: "/security", label: "Authenticator (2FA)", icon: Shield },
-                                { to: "/security", label: "Change Password", icon: KeyRound },
-                                { to: "/wallet", label: "Connected Wallets", icon: Wallet },
+                                { to: "/wallet", label: "Wallet Overview", icon: Wallet },
                                 { to: "/settings", label: "Notification Settings", icon: Bell },
                             ].map((it) => (
                                 <Link
@@ -121,11 +123,11 @@ export function TopNav({ onMenu }: { onMenu: () => void }) {
                                     {it.label}
                                 </Link>
                             ))}
+
+                            {/* Professional Clean Logout Button */}
                             <button
-                                onClick={() => {
-                                    sessionStore.clear();
-                                    window.location.href = "/login";
-                                }}
+                                type="button"
+                                onClick={handleLogout}
                                 className="mt-1 flex w-full items-center gap-2 rounded-lg border-t border-white/5 px-3 py-2 pt-2 text-sm text-foreground/90 hover:bg-white/5"
                             >
                                 <LogOut className="h-4 w-4 text-muted-foreground" />

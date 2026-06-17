@@ -1,7 +1,8 @@
 import { Sidebar } from "@/components/dashboard/Sidebar";
 import { TopNav } from "@/components/dashboard/TopNav";
-import { createFileRoute, Outlet } from "@tanstack/react-router";
-import { useState } from "react";
+import { supabase } from "@/lib/supabaseClient";
+import { createFileRoute, Outlet, useNavigate, useRouter } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 
 export const Route = createFileRoute("/_app")({
     component: AppLayout,
@@ -9,6 +10,23 @@ export const Route = createFileRoute("/_app")({
 
 function AppLayout() {
     const [open, setOpen] = useState(false);
+    const navigate = useNavigate();
+    const router = useRouter();
+
+    // Professional Observer: Pure dashboard mein kahin se bhi logout ho, ye automatic handle karega
+    useEffect(() => {
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+            if (event === "SIGNED_OUT" || !session) {
+                router.invalidate();
+                navigate({ to: "/login" });
+            }
+        });
+
+        return () => {
+            subscription.unsubscribe();
+        };
+    }, [navigate, router]);
+
     return (
         <div className="relative min-h-screen bg-[#050816] text-foreground">
             <div className="pointer-events-none fixed inset-0 -z-10 bg-grid opacity-40" />

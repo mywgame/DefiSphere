@@ -1,5 +1,6 @@
 import { sessionStore } from "@/lib/session";
-import { Link, useRouterState } from "@tanstack/react-router";
+import { supabase } from "@/lib/supabaseClient"; // 🔥 Fix: Supabase import kiya backend logout ke liye
+import { Link, useNavigate, useRouter, useRouterState } from "@tanstack/react-router"; // 🔥 Fix: Navigation state hooks add kiye
 import {
     ArrowDownToLine,
     ArrowUpFromLine,
@@ -10,12 +11,12 @@ import {
     Receipt,
     Settings,
     Shield,
-    Sparkles,
     User,
     Users,
     Wallet,
-    X,
+    X
 } from "lucide-react";
+import { toast } from "sonner";
 
 const items = [
     { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -33,6 +34,32 @@ const items = [
 
 export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
     const pathname = useRouterState({ select: (s) => s.location.pathname });
+    const navigate = useNavigate();
+    const router = useRouter();
+
+    // 🔥 Professional Fixed Logout Handler
+    const handleLogout = async () => {
+        try {
+            // 1. Supabase backend session ko clear karo
+            const { error } = await supabase.auth.signOut();
+            if (error) throw error;
+
+            // 2. Local session storage clean karo
+            await sessionStore.clear();
+
+            toast.success("Logged out successfully");
+
+            // 3. Router state invalidate karo aur route change karo redirection loop todne ke liye
+            router.invalidate();
+            onClose();
+
+            // 4. Clean window replace method safely login screen par throw karega
+            window.location.replace("/login");
+        } catch (error: any) {
+            console.error("Sidebar logout clean failed:", error);
+            toast.error(error.message || "Failed to log out cleanly");
+        }
+    };
 
     return (
         <>
@@ -46,13 +73,13 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
                 className={`fixed inset-y-0 left-0 z-50 w-72 transform border-r border-white/5 bg-[#070914]/95 backdrop-blur-xl transition-transform duration-300 lg:translate-x-0 ${open ? "translate-x-0" : "-translate-x-full"
                     } lg:static lg:z-0 lg:bg-transparent flex flex-col`}
             >
-                {/* Header (Logo block) - Kept exactly as your original */}
+                {/* Header (Logo block) - Same Premium Design */}
                 <div className="flex h-16 items-center justify-between px-5 flex-shrink-0">
-                    <Link to="/" className="flex items-center gap-2">
-                        <div className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-gradient-to-br from-[#2F53FF] via-[#263DFF] to-[#8024FF] shadow-[0_4px_12px_rgba(38,61,255,0.3)]">
+                    <Link to="/" className="flex items-center gap-2.5 group" onClick={onClose}>
+                        <div className="flex h-8 w-8 items-center justify-center rounded-[8px] bg-gradient-to-br from-[#2F53FF] via-[#263DFF] to-[#8024FF] shadow-[0_4px_10px_rgba(38,61,255,0.25)] transition-transform duration-300 group-hover:scale-105">
                             <svg
-                                width="16"
-                                height="16"
+                                width="14"
+                                height="14"
                                 viewBox="0 0 24 24"
                                 fill="none"
                                 stroke="currentColor"
@@ -64,8 +91,8 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
                                 <path d="M12 3L2 21h20L12 3z" />
                             </svg>
                         </div>
-                        <span className="font-sans text-[20px] font-bold tracking-tight text-white/90">
-                            DeFi<span className="bg-gradient-to-r from-[#00A3FF] to-[#00D1FF] bg-clip-text text-transparent">Sphere</span>
+                        <span className="font-sans text-[17px] font-extrabold tracking-tight text-white antialiased">
+                            DeFi<span className="font-medium tracking-wide bg-gradient-to-r from-[#00A3FF] via-[#00D1FF] to-[#00F0FF] bg-clip-text text-transparent ml-[1px]">Sphere</span>
                         </span>
                     </Link>
 
@@ -78,7 +105,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
                     </button>
                 </div>
 
-                {/* Nav section - Scroll added & styled exactly like yours */}
+                {/* Nav section - Menu list with Logout right under Settings */}
                 <nav className="px-3 py-2 flex-1 overflow-y-auto scrollbar-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
                     <p className="px-3 pb-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/70">
                         Menu
@@ -113,27 +140,25 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
                                 </li>
                             );
                         })}
-                    </ul>
 
-                    {/* Logout Button - Kept exactly as your original */}
-                    <div className="mt-6 px-1 pb-4">
-                        <button
-                            onClick={() => {
-                                sessionStore.clear();
-                                window.location.href = "/login";
-                            }}
-                            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-muted-foreground transition hover:bg-white/5 hover:text-foreground"
-                        >
-                            <span className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/5 bg-white/[0.03]">
-                                <LogOut className="h-4 w-4" />
-                            </span>
-                            <span className="font-medium">Logout</span>
-                        </button>
-                    </div>
+                        {/* Logout Button inside the menu list exactly below settings */}
+                        <li className="pt-1">
+                            <button
+                                type="button"
+                                onClick={handleLogout}
+                                className="group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-muted-foreground transition hover:bg-white/5 hover:text-foreground"
+                            >
+                                <span className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/5 bg-white/[0.03] text-muted-foreground group-hover:text-foreground">
+                                    <LogOut className="h-4 w-4" />
+                                </span>
+                                <span className="font-medium">Logout</span>
+                            </button>
+                        </li>
+                    </ul>
                 </nav>
 
-                {/* Bottom Card Area - Changed from absolute to relative alignment using mt-auto */}
-                <div className="mt-auto p-4 flex-shrink-0">
+                {/* Bottom Card Area */}
+                <div className="p-4 flex-shrink-0">
                     <div className="rounded-2xl border border-white/5 bg-gradient-to-br from-[color:var(--neon-purple)]/15 to-[color:var(--neon-cyan)]/10 p-4">
                         <div className="flex items-center gap-2">
                             <Gift className="h-4 w-4 text-[color:var(--neon-cyan)]" />

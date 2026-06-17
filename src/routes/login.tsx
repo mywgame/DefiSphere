@@ -9,7 +9,10 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
-import { mockSignIn, useSession } from "@/lib/session";
+
+// Supabase aur Sonner notifications
+import { supabase } from "@/lib/supabaseClient";
+import { toast } from "sonner";
 
 const schema = z.object({
     email: z.string().trim().min(1, "Email is required").email("Enter a valid email").max(255),
@@ -35,7 +38,6 @@ export const Route = createFileRoute("/login")({
 function LoginPage() {
     const navigate = useNavigate();
     const router = useRouter();
-    const session = useSession();
     const [showPw, setShowPw] = useState(false);
     const [serverError, setServerError] = useState<string | null>(null);
 
@@ -51,18 +53,56 @@ function LoginPage() {
         mode: "onBlur",
     });
 
+    // Auto-redirect loop protection agar session valid hai toh
     useEffect(() => {
-        if (session) navigate({ to: "/dashboard" });
-    }, [session, navigate]);
+        if (typeof window !== "undefined") {
+            supabase.auth.getSession().then(({ data: { session } }) => {
+                if (session) {
+                    navigate({ to: "/dashboard" });
+                }
+            });
+        }
+    }, [navigate]);
 
     const onSubmit = async (values: FormValues) => {
         setServerError(null);
         try {
-            await mockSignIn(values.email, values.password);
-            router.invalidate();
-            navigate({ to: "/dashboard" });
-        } catch (e) {
-            setServerError(e instanceof Error ? e.message : "Sign in failed. Try again.");
+            // 1. Direct real-time Supabase auth sign-in
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email: values.email,
+                password: values.password,
+            });
+
+            if (error) throw error;
+
+            // 2. Local State synchronizing taaki TanStack application layouts sync ho sakein
+            if (typeof window !== "undefined" && data?.session) {
+                toast.success("Welcome back!", {
+                    description: "You have successfully signed in.",
+                });
+
+                // Clear layout levels cache
+                router.invalidate();
+
+                // Token store verification delay to prevent page freezes
+                setTimeout(() => {
+                    if (values.email.toLowerCase().startsWith("admin")) {
+                        navigate({ to: "/admin" });
+                    } else {
+                        navigate({ to: "/dashboard" });
+                    }
+                }, 150);
+            }
+        } catch (e: any) {
+            console.error("Login Error:", e);
+            const errMsg = e?.message || "Sign in failed. Try again.";
+            setServerError(errMsg);
+
+            if (typeof window !== "undefined") {
+                toast.error("Authentication Failed", {
+                    description: errMsg,
+                });
+            }
         }
     };
 
@@ -86,7 +126,7 @@ function LoginPage() {
                     transition={{ duration: 0.6, ease: "easeOut" }}
                     className="grid w-full gap-10 lg:grid-cols-2 lg:gap-16"
                 >
-                    {/* Left: brand panel */}
+                    {/* Left Panel */}
                     <div className="hidden flex-col justify-between rounded-3xl glass-card p-10 lg:flex">
                         <Link to="/" className="flex items-center gap-2.5">
                             <span
@@ -127,7 +167,7 @@ function LoginPage() {
                         </p>
                     </div>
 
-                    {/* Right: form */}
+                    {/* Right Form */}
                     <div className="rounded-3xl glass-card p-7 md:p-10">
                         <Link to="/" className="mb-8 inline-flex items-center gap-2 lg:hidden">
                             <span
@@ -145,7 +185,7 @@ function LoginPage() {
                             <h2 className="font-display text-3xl font-bold tracking-tight">Sign in</h2>
                             <p className="mt-2 text-sm text-muted-foreground">
                                 Don't have an account?{" "}
-                                <Link to="/login" className="font-medium text-[color:var(--neon-cyan)] hover:underline">
+                                <Link to="/register" className="font-medium text-[color:var(--neon-cyan)] hover:underline">
                                     Create one
                                 </Link>
                             </p>
@@ -208,7 +248,6 @@ function LoginPage() {
                                     <button
                                         type="button"
                                         onClick={() => setShowPw((v) => !v)}
-                                        aria-label={showPw ? "Hide password" : "Show password"}
                                         className="absolute right-2 top-1/2 inline-flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground hover:bg-white/5 hover:text-foreground"
                                     >
                                         {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
