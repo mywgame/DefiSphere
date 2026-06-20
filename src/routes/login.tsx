@@ -9,6 +9,7 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+//TANSTACK LINK FOR FORGOT PASSWORD
 
 // Supabase aur Sonner notifications
 import { supabase } from "@/lib/supabaseClient";
@@ -18,7 +19,7 @@ const schema = z.object({
     email: z.string().trim().min(1, "Email is required").email("Enter a valid email").max(255),
     password: z
         .string()
-        .min(8, "Password must be at least 8 characters")
+        .min(6, "Password must be at least 6 characters")
         .max(128, "Password too long"),
     remember: z.boolean().optional(),
 });
@@ -228,7 +229,7 @@ function LoginPage() {
                                         Password
                                     </label>
                                     <Link
-                                        to="/login"
+                                        to="/forgot-password"
                                         className="text-xs font-medium text-muted-foreground hover:text-[color:var(--neon-cyan)]"
                                     >
                                         Forgot?

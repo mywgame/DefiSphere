@@ -6,6 +6,7 @@ import { Hero } from "@/components/defi/Hero";
 import { Navbar } from "@/components/defi/Navbar";
 import { Roadmap } from "@/components/defi/Roadmap";
 import { createFileRoute } from "@tanstack/react-router";
+import ScrollProgress from "@/components/ui/scrollprogress";
 
 export const Route = createFileRoute("/")({
     head: () => ({
@@ -38,6 +39,7 @@ function Index() {
                 <Faq />
             </main>
             <Footer />
+            <ScrollProgress />
         </div>
     );
 }
